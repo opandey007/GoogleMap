@@ -1,0 +1,19 @@
+.locationicon {
+  position: absolute;
+  left: 93%;
+  top: 69%;
+  color: mediumblue;
+  cursor: pointer;
+}
+.locate {
+  width: 50px;
+  height: 24px;
+  object-fit: cover;
+  margin-top: 16px;
+}
+.well {
+  display: flex;
+}
+.search {
+  padding: 18px;
+}
