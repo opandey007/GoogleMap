@@ -3,30 +3,21 @@ import {
   GoogleMap,
   Marker,
   useJsApiLoader,
-  Autocomplete,
   InfoWindow,
 } from '@react-google-maps/api';
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxPopover,
-  ComboboxList,
-  ComboboxOption,
-  ComboboxOptionText,
-} from '@reach/combobox';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import { useSelector, useDispatch } from 'react-redux';
 import usePlacesAutocomplete, { getGeocode } from 'use-places-autocomplete';
 import '@reach/combobox/styles.css';
-import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { formatRelative } from 'date-fns';
-import Button from '@mui/material/Button';
 import mapStyle from '../Common/utils/mapStyle';
 import '../Common/Css/main.css';
 import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { SearchData } from '../Action';
 const containerStyle = {
   width: '100vw',
-  height: '100vh',
+  height: '90vh',
 };
 const center = {
   lat: 43.653225,
@@ -64,7 +55,7 @@ function Drawmap() {
   }, []);
   const panTo = React.useCallback(({ lat, lng }) => {
     mapref.current.panTo({ lat, lng });
-    mapref.current.setZoom(14);
+    mapref.current.setZoom(10);
   }, []);
   const options = {
     styles: mapStyle,
@@ -115,7 +106,7 @@ function Drawmap() {
               }}
             >
               <div>
-                <h2>Bear Spotted</h2>
+                <h2>Selected Spot</h2>
                 <p>Spotted {formatRelative(selected.time, new Date())}</p>
               </div>
             </InfoWindow>
@@ -131,7 +122,6 @@ function Drawmap() {
 export default React.memo(Drawmap);
 
 function Locate({ panTo }) {
-  Search({});
   return (
     <img
       src="https://flyclipart.com/thumbs/blue-and-white-compass-svg-clip-arts-600-x-516-px-blue-compass-rose-946054.png"
@@ -166,17 +156,12 @@ function Search({ panTo }) {
     },
   });
   const myState = useSelector((state) => state.SeletedPlace);
-  console.log(myState);
+  // console.log(myState.target.value);
   const dispatch = useDispatch();
-  const handleInput = (e) => {
-    setValue(e.target.value);
-  };
-
   const handleSelect = async (address) => {
     dispatch(SearchData(address));
     setValue(address, false);
     clearSuggestions();
-
     try {
       const results = await getGeocode({ address });
       const { lat, lng } = await getLatLng(results[0]);
@@ -185,26 +170,27 @@ function Search({ panTo }) {
       console.log('😱 Error: ', error);
     }
   };
-
   return (
     <div className="search">
-      <Combobox onSelect={handleSelect}>
-        <ComboboxInput
-          value={value}
-          onChange={handleInput}
-          disabled={!ready}
-          placeholder="Search your location"
-          key={value}
-        />
-        <ComboboxPopover>
-          <ComboboxList key={value}>
-            {status === 'OK' &&
-              data.map(({ id, description }) => (
-                <ComboboxOption key={id} value={description} />
-              ))}
-          </ComboboxList>
-        </ComboboxPopover>
-      </Combobox>
+      <Autocomplete
+        autoHighlight
+        options={data.map((description) => description.description)}
+        onChange={(event, value) => handleSelect(value)} // prints the selected value
+        sx={{ width: 300 }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Search Location"
+            variant="outlined"
+            fullWidth
+            value={value}
+            onChange={(event) => {
+              const { value } = event.target;
+              setValue(value);
+            }}
+          />
+        )}
+      />
     </div>
   );
 }
